@@ -34,5 +34,6 @@ Parámetros frecuentes:
 ## 🔄 Actualización
 Dentro del nodo Proxmox:
 ```bash
-bash <(curl -sL https://raw.githubusercontent.com/Transcendenceia/browser-use-webui-lxc/main/update-webui.sh) TU CTID
+bash <(curl -sL https://raw.githubusercontent.com/Transcendenceia/browser-use-webui-lxc/main/update-webui.sh) "TU CTID"
 ```
+Reemplaza "TU CTID" por el CTID de tu contenedor Web-UI
