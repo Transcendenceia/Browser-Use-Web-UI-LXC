@@ -9,12 +9,13 @@ bash <(curl -sL https://raw.githubusercontent.com/Transcendenceia/Browser-Use-We
 
 ```
 Acepta los valores por defecto o personalízalos cuando el script te los pregunte.
-Si querés modo totalmente silencioso:
+
+## Si querés modo totalmente silencioso:
 ```bash
 bash <(curl -sL https://raw.githubusercontent.com/Transcendenceia/Browser-Use-Web-UI-LXC/main/create-webui-lxc.sh) -q
 
 ```
-Parámetros frecuentes:
+## Parámetros frecuentes:
 | Flag | Descripción                      | Ejemplo                                  |
 | ---- | -------------------------------- | ---------------------------------------- |
 | `-c` | CTID explícito                   | `-c 105`                                 |
