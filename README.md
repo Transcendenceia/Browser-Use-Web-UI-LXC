@@ -33,6 +33,13 @@ bash <(curl -sL https://raw.githubusercontent.com/Transcendenceia/Browser-Use-We
    • VNC pwd: vncpassword
    • CTID   : 105 (web-ui)
 ```
+## Modificar variables de entorno dentro del contenedor.
+Entra al contenedor que se creo despues de la instalacion, con usuario root y la contraseña que definiste en la instalacion y ejecuta este comando:
+```bash
+nano /opt/web-ui/.env
+```
+Aqui podras agregar o modificar las variables que hagan falta.
+
 ## 🔄 Actualización
 Dentro del nodo Proxmox:
 ```bash
