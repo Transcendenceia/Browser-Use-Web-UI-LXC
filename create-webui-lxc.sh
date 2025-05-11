@@ -1,38 +1,12 @@
 #!/usr/bin/env bash
-# ==============================================================================
-#  create-webui-lxc.sh  –  Helper para desplegar **browser-use/web-ui**
-#  en un contenedor LXC *no privilegiado* Debian 12 sobre Proxmox VE (≥ 7.x).
-# ------------------------------------------------------------------------------
-#  MODO RÁPIDO  ➜  ejecuta y pulsa <Enter> en cada pregunta.
-#                (usa los valores por defecto indicados más abajo)
-#
-#  FLAGS OPCIONALES
-#    -q                 no preguntar nada (usa defaults o flags)
-#    -c <id>            CTID explícito
-#    -n <hostname>      nombre de host
-#    -s <cores>         vCPUs
-#    -r <ram MB>        RAM
-#    -d <disk GB>       disco
-#    -t <storage>       storage para la plantilla (vztmpl)        [local]
-#    -f <storage>       storage para rootfs (lvm/zfs/directory)   [local-lvm]
-#    -i <bridge>        interfaz/bridge de red                    [vmbr0]
-#    -p <pass>          contraseña root + VNC
-#    -4 <ip/mask,gw,dns>  IPv4 estática: 192.168.1.50/24,192.168.1.1,8.8.8.8
-#    -6 <ip6/prefix,gw>   IPv6 estática: 2001:db8::50/64,2001:db8::1
-#    -k <apiKeys>       claves en el formato
-#                       OPENAI=sk-xxx,GOOGLE=AIzzz,ANTHROPIC=claude-key
-#    -h                 ayuda
-# ------------------------------------------------------------------------------
 set -Eeuo pipefail
 shopt -s inherit_errexit 2>/dev/null || true
 
-# ─── helpers ───────────────────────────────────────────────────────────────────
 C_RED='\e[31m'; C_CYAN='\e[36m'; C_GRN='\e[32m'; C_RST='\e[0m'
 info(){ echo -e "${C_CYAN}➤ $*${C_RST}"; }
 die(){  echo -e "${C_RED}✘ $*${C_RST}" >&2; exit 1; }
-ask(){  local __var=$1 __def=$2 __q=$3; read -rp "$__q [$__def]: " _v; printf -v "$__var" '%s' "${_v:-$__def}"; }
+ask(){ local __var=$1 __def=$2 __q=$3; read -rp "$__q [$__def]: " _v; printf -v "$__var" '%s' "${_v:-$__def}"; }
 
-# ─── defaults ─────────────────────────────────────────────────────────────────
 CTID=$(pvesh get /cluster/nextid)
 HOSTNAME="web-ui"
 CORES=4
@@ -42,18 +16,19 @@ TEMPLATE_STORAGE="local"
 ROOTFS_STORAGE="local-lvm"
 BRIDGE="vmbr0"
 PASSWORD="vncpassword"
-STATIC4=""  # "ip/mask,gw,dns"
-STATIC6=""  # "ip6/prefix,gw"
-API_OPENAI=""; API_GOOGLE=""; API_ANTHROPIC=""
+STATIC4=""
+STATIC6=""
+API_OPENAI=""
+API_GOOGLE=""
+API_ANTHROPIC=""
 QUIET=0
 
-# ─── flags ────────────────────────────────────────────────────────────────────
-usage(){ grep -E "^#  " "$0" | cut -c5-; exit 0; }
+usage(){ grep -E "^# " "$0" | cut -c5-; exit 0; }
 while getopts "qc:n:s:r:d:t:f:i:p:4:6:k:h" opt; do
   case $opt in
     q) QUIET=1;;
     c) CTID=$OPTARG;;
-   # n) HOSTNAME=$OPTARG;;
+    n) HOSTNAME=$OPTARG;;
     s) CORES=$OPTARG;;
     r) MEM=$OPTARG;;
     d) DISK=$OPTARG;;
@@ -64,47 +39,48 @@ while getopts "qc:n:s:r:d:t:f:i:p:4:6:k:h" opt; do
     4) STATIC4=$OPTARG;;
     6) STATIC6=$OPTARG;;
     k) IFS=',' read -ra KVS <<<"$OPTARG"; for kv in "${KVS[@]}"; do
-         case $kv in OPENAI=*)      API_OPENAI=${kv#OPENAI=};;      \
-                 GOOGLE=*)      API_GOOGLE=${kv#GOOGLE=};;      \
-                 ANTHROPIC=*)   API_ANTHROPIC=${kv#ANTHROPIC=};; esac; done;;
+         case $kv in
+           OPENAI=*)      API_OPENAI=${kv#OPENAI=}      ;;
+           GOOGLE=*)      API_GOOGLE=${kv#GOOGLE=}      ;;
+           ANTHROPIC=*)   API_ANTHROPIC=${kv#ANTHROPIC=} ;;
+         esac
+       done;;
     h) usage;;
     *) usage;;
   esac
 done
 shift $((OPTIND-1))
 
-# ─── interactive prompts (if not quiet) ───────────────────────────────────────
 if (( QUIET==0 )); then
-  ask CTID        "$CTID"            "CTID"
-#  ask HOSTNAME    "$HOSTNAME"        "Hostname"
-  ask CORES       "$CORES"           "vCPUs"
-  ask MEM         "$MEM"             "RAM MB"
-  ask DISK        "$DISK"            "Disk GB"
+  ask CTID        "$CTID"        "CTID"
+  ask HOSTNAME    "$HOSTNAME"    "Hostname"
+  ask CORES       "$CORES"       "vCPUs"
+  ask MEM         "$MEM"         "RAM MB"
+  ask DISK        "$DISK"        "Disk GB"
   ask TEMPLATE_STORAGE "$TEMPLATE_STORAGE" "Template storage"
   ask ROOTFS_STORAGE  "$ROOTFS_STORAGE"  "RootFS storage"
-  ask BRIDGE      "$BRIDGE"          "Bridge"
+  ask BRIDGE      "$BRIDGE"      "Bridge"
   read -rsp "Root/VNC password [hidden, default '$PASSWORD']: " pw; echo
   [[ -n $pw ]] && PASSWORD=$pw
-  ask STATIC4     "$STATIC4"         "Static IPv4  (ip/mask,gw,dns)  – leave blank for DHCP"
-  ask STATIC6     "$STATIC6"         "Static IPv6  (ip/prefix,gw)    – blank to omit"
-  ask API_OPENAI      "$API_OPENAI"      "OpenAI  API key  (blank skip)"
-  ask API_GOOGLE      "$API_GOOGLE"      "Google API key  (blank skip)"
-  ask API_ANTHROPIC   "$API_ANTHROPIC"   "Anthropic API key (blank skip)"
+  ask STATIC4     "$STATIC4"     "Static IPv4 (ip/mask,gw,dns)"
+  ask STATIC6     "$STATIC6"     "Static IPv6 (ip/prefix,gw)"
+  ask API_OPENAI      "$API_OPENAI"      "OpenAI API key"
+  ask API_GOOGLE      "$API_GOOGLE"      "Google API key"
+  ask API_ANTHROPIC   "$API_ANTHROPIC"   "Anthropic API key"
   echo
   info "Resumen ➜ CT $CTID • $CORES CPU • $MEM MB • ${DISK}G • $BRIDGE • pw='******'"
-  read -rp "¿Continuar? [Y/n] " yn; [[ ${yn:-Y} =~ ^[Yy]$ ]] || { echo "Abortado"; exit 0; }
+  read -rp "¿Continuar? [Y/n] " yn
+  [[ ${yn:-Y} =~ ^[Yy]$ ]] || { echo "Abortado"; exit 0; }
 fi
 
-# ─── template ─────────────────────────────────────────────────────────────────
 LATEST=$(pveam available | awk '/debian-12-standard_.*amd64/ {print $2}' | sort -Vr | head -n1)
-[[ -z $LATEST ]] && die "No hay plantilla Debian 12 en pveam."
+[[ -n $LATEST ]] || die "No hay plantilla Debian 12 en pveam."
 TEMPLATE="$TEMPLATE_STORAGE:vztmpl/$LATEST"
 if ! pveam list "$TEMPLATE_STORAGE" | grep -q "$LATEST"; then
-  info "Descargando plantilla $LATEST en $TEMPLATE_STORAGE …"
+  info "Descargando plantilla $LATEST en $TEMPLATE_STORAGE…"
   pveam download "$TEMPLATE_STORAGE" "$LATEST"
 fi
 
-# ─── net0 string ──────────────────────────────────────────────────────────────
 NET0="name=eth0,bridge=$BRIDGE"
 if [[ -n $STATIC4 ]]; then
   IFS=',' read -r IP4 GW4 DNS4 <<<"$STATIC4"
@@ -116,7 +92,6 @@ if [[ -n $STATIC6 ]]; then
 fi
 [[ -z $STATIC4 ]] && NET0+=",ip=dhcp"
 
-# ─── create CT ────────────────────────────────────────────────────────────────
 info "Creando CT $CTID ($HOSTNAME)…"
 pct create "$CTID" "$TEMPLATE" \
   --unprivileged 1 --ostype debian --hostname "$HOSTNAME" \
@@ -125,30 +100,25 @@ pct create "$CTID" "$TEMPLATE" \
 
 ct_exec(){ pct exec "$CTID" -- bash -ceu "$*"; }
 
-# ─── base pkgs ────────────────────────────────────────────────────────────────
 info "Instalando paquetes base…"
 ct_exec "apt-get update -qq && apt-get install -y --no-install-recommends \
   git curl wget unzip supervisor xvfb x11vnc tigervnc-tools websockify \
   python3 python3-venv python3-pip fonts-liberation libgtk-3-0 libnss3 \
   libxss1 libasound2 libgbm1 libatk-bridge2.0-0 -qq"
 
-# ─── clone & deps ─────────────────────────────────────────────────────────────
-info "Clonando browser-use/web-ui + Playwright…"
+info "Clonando browser-use/web-ui y Playwright…"
 ct_exec "cd /opt && git clone https://github.com/browser-use/web-ui.git && \
   cd /opt/web-ui && python3 -m venv venv && . venv/bin/activate && \
-  pip install --upgrade pip -q && \
-  pip install -r requirements.txt playwright lxml_html_clean -q && \
+  pip install --upgrade pip -q && pip install -r requirements.txt \
+  playwright lxml_html_clean -q && \
   PLAYWRIGHT_BROWSERS_PATH=/ms-playwright playwright install chromium"
 
-# ─── noVNC ────────────────────────────────────────────────────────────────────
 ct_exec "git clone https://github.com/novnc/noVNC.git /opt/web-ui/noVNC"
 
-# ─── /etc/resolv.conf (DNS) ───────────────────────────────────────────────────
 if [[ -n ${DNS4:-} ]]; then
   ct_exec "echo 'nameserver $DNS4' > /etc/resolv.conf"
 fi
 
-# ─── .env ─────────────────────────────────────────────────────────────────────
 info "Generando .env…"
 ct_exec "cat > /opt/web-ui/.env <<EOF
 OPENAI_ENDPOINT=https://api.openai.com/v1
@@ -186,9 +156,8 @@ RESOLUTION_HEIGHT=1080
 VNCPASSWORD=$PASSWORD
 EOF"
 
-# ─── Supervisor conf ─────────────────────────────────────────────────────────
 info "Creando programas de Supervisor…"
-ct_exec "cat > /etc/supervisor/conf.d/web-ui.conf <<CONF
+ct_exec "cat > /etc/supervisor/conf.d/web-ui.conf <<EOF
 [program:xvfb]
 command=/usr/bin/Xvfb :1 -screen 0 1920x1080x24
 autostart=true
@@ -211,10 +180,9 @@ directory=/opt/web-ui
 environment=DISPLAY=\":1\",PLAYWRIGHT_BROWSERS_PATH=\"/ms-playwright\"
 autostart=true
 autorestart=true
-CONF"
+EOF"
 
-# ────── ensure supervisorctl works ────────────────────────────────────────────
-ct_exec "grep -q '\[unix_http_server\]' /etc/supervisor/supervisord.conf || cat >> /etc/supervisor/supervisord.conf <<SUP
+ct_exec "grep -q '\[unix_http_server\]' /etc/supervisor/supervisord.conf || cat >> /etc/supervisor/supervisord.conf <<EOF
 [unix_http_server]
 file=/var/run/supervisor.sock
 
@@ -223,18 +191,17 @@ supervisor.rpcinterface_factory = supervisor.rpcinterface:make_main_rpcinterface
 
 [supervisorctl]
 serverurl=unix:///var/run/supervisor.sock
-SUP"
+EOF"
 
 ct_exec "systemctl enable --now supervisor"
-# make sure groups are loaded
 ct_exec "sleep 2 && supervisorctl reread && supervisorctl update"
-# ────── summary ───────────────────────────────────────────────────────────────
-IP=$(pct exec "$CTID" -- hostname -I | awk '{print $1}')
-cat <<END
 
-✅  Browser‑Use Web UI deployed!
+IP=$(pct exec "$CTID" -- hostname -I | awk '{print $1}')
+cat <<EOF
+
+✅  Browser-Use Web UI deployed!
    • Gradio : http://$IP:7788
    • noVNC  : http://$IP:6080/vnc.html
    • VNC pwd: $PASSWORD
    • CTID   : $CTID ($HOSTNAME)
-END
+EOF
