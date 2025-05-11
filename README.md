@@ -5,12 +5,13 @@ Despliega **browser-use/web-ui** en un contenedor LXC *no privilegiado* Debian 1
 ## 🚀 Instalación rápida
 
 ```bash
-bash <(curl -sL https://raw.githubusercontent.com/Transcendenceia/browser-use-webui-lxc/main/create-webui-lxc.sh)
+bash <(curl -sL https://raw.githubusercontent.com/Transcendenceia/Browser-Use-Web-UI-LXC/main/create-webui-lxc.sh)
+
 ```
 Acepta los valores por defecto o personalízalos cuando el script te los pregunte.
 Si querés modo totalmente silencioso:
 ```bash
-bash <(curl -sL https://raw.githubusercontent.com/Transcendenceia/browser-use-webui-lxc/main/create-webui-lxc.sh) -q
+bash <(curl -sL https://raw.githubusercontent.com/Transcendenceia/Browser-Use-Web-UI-LXC/main/create-webui-lxc.sh) -q
 
 ```
 Parámetros frecuentes:
@@ -34,6 +35,6 @@ Parámetros frecuentes:
 ## 🔄 Actualización
 Dentro del nodo Proxmox:
 ```bash
-bash <(curl -sL https://raw.githubusercontent.com/Transcendenceia/browser-use-webui-lxc/main/update-webui.sh)
+bash <(curl -sL https://raw.githubusercontent.com/Transcendenceia/Browser-Use-Web-UI-LXC/main/update-webui.sh)
 
 ```
