@@ -23,12 +23,14 @@ Parámetros frecuentes:
 | `-4` | IPv4 estática (`ip/mask,gw,dns`) | `-4 192.168.1.50/24,192.168.1.1,1.1.1.1` |
 | `-6` | IPv6 estática (`ip/prefix,gw`)   | `-6 2001:db8::50/64,2001:db8::1`         |
 
-Al finalizar verás algo como:
+### Al finalizar verás algo como:
+```
 ✅  Browser-Use Web UI deployed!
    • Gradio : http://192.168.1.37:7788
    • noVNC  : http://192.168.1.37:6080/vnc.html
    • VNC pwd: vncpassword
    • CTID   : 105 (web-ui)
+```
 ## 🔄 Actualización
 Dentro del nodo Proxmox:
 ```bash
