@@ -29,7 +29,7 @@ Al finalizar verás algo como:
    • noVNC  : http://192.168.1.37:6080/vnc.html
    • VNC pwd: vncpassword
    • CTID   : 105 (web-ui)
-🔄 Actualización
+## 🔄 Actualización
 Dentro del nodo Proxmox:
 ```bash
 bash <(curl -sL https://raw.githubusercontent.com/Transcendenceia/browser-use-webui-lxc/main/update-webui.sh) TU CTID
