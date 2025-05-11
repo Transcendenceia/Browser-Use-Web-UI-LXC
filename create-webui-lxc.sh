@@ -28,7 +28,7 @@ while getopts "qc:n:s:r:d:t:f:i:p:4:6:k:h" opt; do
   case $opt in
     q) QUIET=1;;
     c) CTID=$OPTARG;;
-    n) HOSTNAME=$OPTARG;;
+   # n) HOSTNAME=$OPTARG;;
     s) CORES=$OPTARG;;
     r) MEM=$OPTARG;;
     d) DISK=$OPTARG;;
@@ -53,7 +53,7 @@ shift $((OPTIND-1))
 
 if (( QUIET==0 )); then
   ask CTID        "$CTID"        "CTID"
-  ask HOSTNAME    "$HOSTNAME"    "Hostname"
+  #ask HOSTNAME    "$HOSTNAME"    "Hostname"
   ask CORES       "$CORES"       "vCPUs"
   ask MEM         "$MEM"         "RAM MB"
   ask DISK        "$DISK"        "Disk GB"
