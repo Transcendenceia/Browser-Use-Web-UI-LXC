@@ -10,7 +10,7 @@ bash <(curl -sL https://raw.githubusercontent.com/Transcendenceia/Browser-Use-We
 ```
 Acepta los valores por defecto o personalízalos cuando el script te los pregunte.
 
-## Si querés modo totalmente silencioso:
+## Modo silencioso:
 ```bash
 bash <(curl -sL https://raw.githubusercontent.com/Transcendenceia/Browser-Use-Web-UI-LXC/main/create-webui-lxc.sh) -q
 
@@ -33,7 +33,7 @@ bash <(curl -sL https://raw.githubusercontent.com/Transcendenceia/Browser-Use-We
    • VNC pwd: vncpassword
    • CTID   : 105 (web-ui)
 ```
-## Modificar variables de entorno dentro del contenedor.
+## Modificar variables de entorno dentro del contenedor
 Entra al contenedor que se creo despues de la instalacion, con usuario root y la contraseña que definiste en la instalacion y ejecuta este comando:
 ```bash
 nano /opt/web-ui/.env
@@ -46,3 +46,5 @@ Dentro del nodo Proxmox:
 bash <(curl -sL https://raw.githubusercontent.com/Transcendenceia/Browser-Use-Web-UI-LXC/main/update-webui.sh)
 
 ```
+## Proyecto Original
+<https://github.com/browser-use/web-ui>
