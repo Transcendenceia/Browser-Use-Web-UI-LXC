@@ -28,7 +28,7 @@ while getopts "qc:n:s:r:d:t:f:i:p:4:6:k:h" opt; do
   case $opt in
     q) QUIET=1;;
     c) CTID=$OPTARG;;
-   # n) HOSTNAME=$OPTARG;;
+    n) HOSTNAME=$OPTARG;;
     s) CORES=$OPTARG;;
     r) MEM=$OPTARG;;
     d) DISK=$OPTARG;;
@@ -40,9 +40,9 @@ while getopts "qc:n:s:r:d:t:f:i:p:4:6:k:h" opt; do
     6) STATIC6=$OPTARG;;
     k) IFS=',' read -ra KVS <<<"$OPTARG"; for kv in "${KVS[@]}"; do
          case $kv in
-           OPENAI=*)      API_OPENAI=${kv#OPENAI=}      ;;
-           GOOGLE=*)      API_GOOGLE=${kv#GOOGLE=}      ;;
-           ANTHROPIC=*)   API_ANTHROPIC=${kv#ANTHROPIC=} ;;
+           OPENAI=*)    API_OPENAI=${kv#OPENAI=}      ;;
+           GOOGLE=*)    API_GOOGLE=${kv#GOOGLE=}      ;;
+           ANTHROPIC=*) API_ANTHROPIC=${kv#ANTHROPIC=} ;;
          esac
        done;;
     h) usage;;
@@ -53,7 +53,7 @@ shift $((OPTIND-1))
 
 if (( QUIET==0 )); then
   ask CTID        "$CTID"        "CTID"
-  #ask HOSTNAME    "$HOSTNAME"    "Hostname"
+  ask HOSTNAME    "$HOSTNAME"    "Hostname"
   ask CORES       "$CORES"       "vCPUs"
   ask MEM         "$MEM"         "RAM MB"
   ask DISK        "$DISK"        "Disk GB"
@@ -100,18 +100,23 @@ pct create "$CTID" "$TEMPLATE" \
 
 ct_exec(){ pct exec "$CTID" -- bash -ceu "$*"; }
 
-info "Instalando paquetes base…"
+info "Instalando paquetes base y SSH…"
 ct_exec "apt-get update -qq && apt-get install -y --no-install-recommends \
   git curl wget unzip supervisor xvfb x11vnc tigervnc-tools websockify \
-  python3 python3-venv python3-pip fonts-liberation libgtk-3-0 libnss3 \
-  libxss1 libasound2 libgbm1 libatk-bridge2.0-0 -qq"
+  openssh-server python3 python3-venv python3-pip fonts-liberation \
+  libgtk-3-0 libnss3 libxss1 libasound2 libgbm1 libatk-bridge2.0-0 -qq"
+
+info "Configurando SSH…"
+ct_exec "sed -i -e 's/^#*\s*PermitRootLogin.*/PermitRootLogin yes/' \
+            -e 's/^#*\s*PasswordAuthentication.*/PasswordAuthentication yes/' \
+            /etc/ssh/sshd_config && systemctl enable --now ssh"
 
 info "Clonando browser-use/web-ui y Playwright…"
 ct_exec "cd /opt && git clone https://github.com/browser-use/web-ui.git && \
   cd /opt/web-ui && python3 -m venv venv && . venv/bin/activate && \
   pip install --upgrade pip -q && pip install -r requirements.txt \
-  playwright lxml_html_clean -q && \
-  PLAYWRIGHT_BROWSERS_PATH=/ms-playwright playwright install chromium"
+  playwright lxml_html_clean -q && PLAYWRIGHT_BROWSERS_PATH=/ms-playwright \
+  playwright install chromium"
 
 ct_exec "git clone https://github.com/novnc/noVNC.git /opt/web-ui/noVNC"
 
@@ -200,8 +205,9 @@ IP=$(pct exec "$CTID" -- hostname -I | awk '{print $1}')
 cat <<EOF
 
 ✅  Browser-Use Web UI deployed!
-   • Gradio : http://$IP:7788
-   • noVNC  : http://$IP:6080/vnc.html
-   • VNC pwd: $PASSWORD
-   • CTID   : $CTID ($HOSTNAME)
+   • SSH     : ssh root@$IP
+   • Gradio  : http://$IP:7788
+   • noVNC   : http://$IP:6080/vnc.html
+   • VNC pwd : $PASSWORD
+   • CTID    : $CTID ($HOSTNAME)
 EOF
