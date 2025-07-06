@@ -116,7 +116,13 @@ info "Preparing Playwright browsers directory…"
 ct_exec "mkdir -p /ms-playwright && chown $USERNAME:$USERNAME /ms-playwright"
 
 info "Cloning browser-use/web-ui…"
-ct_exec "sudo -u $USERNAME -H bash -c 'cd ~ && git clone https://github.com/browser-use/web-ui.git web-ui && cd web-ui && python3 -m venv venv && . venv/bin/activate && pip install --upgrade pip -q && pip install -r requirements.txt -q && PLAYWRIGHT_BROWSERS_PATH=/ms-playwright playwright install chromium'"
+
+ct_exec "sudo -u $USERNAME -H bash -c 'cd ~ && git clone https://github.com/browser-use/web-ui.git web-ui && cd web-ui && python3 -m venv venv && . venv/bin/activate && pip install --upgrade pip -q && pip install -r requirements.txt -q && PLAYWRIGHT_BROWSERS_PATH=/ms-playwright playwright install chrome'"
+
+info "Adjusting default directories…"
+ct_exec "sudo -u $USERNAME mkdir -p /home/$USERNAME/web-ui/data"
+ct_exec "sudo -u $USERNAME bash -c 'find /home/$USERNAME/web-ui/src -type f -name \"*.py\" -exec sed -i \"s|./tmp/|./data/|g\" {} +'"
+
 
 info "Cloning noVNC…"
 ct_exec "sudo -u $USERNAME git clone https://github.com/novnc/noVNC.git /home/$USERNAME/web-ui/noVNC"

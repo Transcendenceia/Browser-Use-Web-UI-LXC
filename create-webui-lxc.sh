@@ -111,7 +111,11 @@ ct_exec "cd /opt && git clone https://github.com/browser-use/web-ui.git && \
   cd /opt/web-ui && python3 -m venv venv && . venv/bin/activate && \
   pip install --upgrade pip -q && pip install -r requirements.txt \
   playwright lxml_html_clean -q && \
-  PLAYWRIGHT_BROWSERS_PATH=/ms-playwright playwright install chromium"
+  PLAYWRIGHT_BROWSERS_PATH=/ms-playwright playwright install chrome"
+
+info "Adjusting default directories…"
+ct_exec "mkdir -p /opt/web-ui/data"
+ct_exec "find /opt/web-ui/src -type f -name '*.py' -exec sed -i 's|./tmp/|./data/|g' {} +"
 
 ct_exec "git clone https://github.com/novnc/noVNC.git /opt/web-ui/noVNC"
 
