@@ -121,11 +121,11 @@ ct_exec "sudo -u $USERNAME -H bash -c 'cd ~ && git clone https://github.com/brow
 
 info "Adjusting default directories…"
 ct_exec "sudo -u $USERNAME mkdir -p /home/$USERNAME/web-ui/data"
-ct_exec "sudo -u $USERNAME bash -c 'find /home/$USERNAME/web-ui/src -type f -name \"*.py\" -exec sed -i \"s|./tmp/|./data/|g\" {} +'"
+ct_exec "sudo -u $USERNAME -H bash -c 'find ~/web-ui/src -type f -name \"*.py\" -exec sed -i \"s|./tmp/|./data/|g\" {} +'"
 
 
 info "Cloning noVNC…"
-ct_exec "sudo -u $USERNAME git clone https://github.com/novnc/noVNC.git /home/$USERNAME/web-ui/noVNC"
+ct_exec "sudo -u $USERNAME -H git clone https://github.com/novnc/noVNC.git /home/$USERNAME/web-ui/noVNC"
 
 info "Patching default resolution…"
 ct_exec "sudo -u $USERNAME sed -i 's/value=1280/value=1920/' /home/$USERNAME/web-ui/src/webui/components/browser_settings_tab.py"
