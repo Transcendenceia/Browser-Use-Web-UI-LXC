@@ -40,7 +40,7 @@ pct exec "$CTID" -- bash -Eeuo pipefail <<'EOF'
   # Instalar nuevas dependencias
   pip install -r requirements.txt -q
   # Actualizar Playwright
-  PLAYWRIGHT_BROWSERS_PATH=/ms-playwright playwright install chromium -q
+  PLAYWRIGHT_BROWSERS_PATH=/ms-playwright playwright install chromium
   # Reiniciar servicios
   supervisorctl restart webui novnc
 EOF

@@ -113,7 +113,7 @@ ct_exec "echo '$USERNAME:$PASSWORD' | chpasswd"
 ct_exec "adduser $USERNAME sudo"
 
 info "Cloning browser-use/web-ui…"
-ct_exec "sudo -u $USERNAME -H bash -c 'cd ~ && git clone https://github.com/browser-use/web-ui.git web-ui && cd web-ui && python3 -m venv venv && . venv/bin/activate && pip install --upgrade pip -q && pip install -r requirements.txt -q && PLAYWRIGHT_BROWSERS_PATH=/ms-playwright playwright install chromium -q'"
+ct_exec "sudo -u $USERNAME -H bash -c 'cd ~ && git clone https://github.com/browser-use/web-ui.git web-ui && cd web-ui && python3 -m venv venv && . venv/bin/activate && pip install --upgrade pip -q && pip install -r requirements.txt -q && PLAYWRIGHT_BROWSERS_PATH=/ms-playwright playwright install chromium'"
 
 info "Cloning noVNC…"
 ct_exec "sudo -u $USERNAME git clone https://github.com/novnc/noVNC.git /home/$USERNAME/web-ui/noVNC"
