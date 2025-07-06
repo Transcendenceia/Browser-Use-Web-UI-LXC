@@ -41,9 +41,9 @@ while getopts "qc:n:s:r:d:t:f:i:p:u:4:6:k:h" opt; do
     6) STATIC6=$OPTARG;;
     k) IFS=',' read -ra KVS <<<"$OPTARG"; for kv in "${KVS[@]}"; do
          case $kv in
-           OPENAI=*)      API_OPENAI=${kv#OPENAI=}      ;;
-           GOOGLE=*)      API_GOOGLE=${kv#GOOGLE=}      ;;
-           ANTHROPIC=*)   API_ANTHROPIC=${kv#ANTHROPIC=} ;;
+           OPENAI=*)    API_OPENAI=${kv#OPENAI=}    ;;
+           GOOGLE=*)    API_GOOGLE=${kv#GOOGLE=}    ;;
+           ANTHROPIC=*) API_ANTHROPIC=${kv#ANTHROPIC=} ;;
          esac
        done;;
     h) usage;;
@@ -102,7 +102,7 @@ pct create "$CTID" "$TEMPLATE" \
 ct_exec(){ pct exec "$CTID" -- bash -ceu "$*"; }
 
 info "Installing base packages and Google Chrome…"
-ct_exec "apt-get update -qq && apt-get install -y --no-install-recommends sudo git curl wget unzip supervisor xvfb x11vnc tigervnc-tools websockify python3 python3-venv python3-pip fonts-liberation libgtk-3-0 libnss3 libxss1 libasound2 libgbm1 libatk-bridge2.0-0 gnupg -qq"
+ct_exec "apt-get update -qq && apt-get install -y --no-install-recommends sudo git curl wget unzip supervisor xvfb x11vnc tigervnc-tools websockify openbox procps python3 python3-venv python3-pip fonts-liberation libgtk-3-0 libnss3 libxss1 libasound2 libgbm1 libatk-bridge2.0-0 gnupg -qq"
 ct_exec "wget -qO- https://dl.google.com/linux/linux_signing_key.pub | gpg --dearmor >/usr/share/keyrings/google-linux-signing-keyring.gpg"
 ct_exec "echo 'deb [arch=amd64 signed-by=/usr/share/keyrings/google-linux-signing-keyring.gpg] http://dl.google.com/linux/chrome/deb/ stable main' > /etc/apt/sources.list.d/google-chrome.list"
 ct_exec "apt-get update -qq && apt-get install -y google-chrome-stable -qq"
@@ -176,6 +176,20 @@ command=/usr/bin/Xvfb :1 -screen 0 1920x1080x24
 autostart=true
 autorestart=true
 
+[program:openbox]
+command=/usr/bin/openbox-session
+environment=DISPLAY=\":1\"
+user=$USERNAME
+autostart=true
+autorestart=true
+
+[program:chrome]
+command=/usr/bin/google-chrome --no-sandbox --no-first-run --disable-features=Translate --disable-translate --disable-infobars --user-data-dir=/home/$USERNAME/chrome_data --kiosk http://localhost:7788
+environment=DISPLAY=\":1\"
+user=$USERNAME
+autostart=true
+autorestart=true
+
 [program:x11vnc]
 command=/usr/bin/x11vnc -display :1 -rfbport 5901 -nopw -forever -passwd $PASSWORD
 autostart=true
@@ -196,7 +210,7 @@ autostart=true
 autorestart=true
 EOFINNER"
 
-ct_exec "grep -q '\[unix_http_server\]' /etc/supervisor/supervisord.conf || cat >> /etc/supervisor/supervisord.conf <<EOFINNER
+ct_exec "grep -q '\\[unix_http_server\\]' /etc/supervisor/supervisord.conf || cat >> /etc/supervisor/supervisord.conf <<EOFINNER
 [unix_http_server]
 file=/var/run/supervisor.sock
 
