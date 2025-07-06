@@ -102,21 +102,16 @@ pct create "$CTID" "$TEMPLATE" \
 ct_exec(){ pct exec "$CTID" -- bash -ceu "$*"; }
 
 info "Installing base packages and Google Chrome…"
-ct_exec "apt-get update -qq && apt-get install -y --no-install-recommends sudo git curl wget unzip supervisor xvfb x11vnc tigervnc-tools websockify openbox procps python3 python3-venv python3-pip fonts-liberation libgtk-3-0 libnss3 libxss1 libasound2 libgbm1 libatk-bridge2.0-0 gnupg -qq"
-ct_exec "wget -qO- https://dl.google.com/linux/linux_signing_key.pub | gpg --dearmor >/usr/share/keyrings/google-linux-signing-keyring.gpg"
-ct_exec "echo 'deb [arch=amd64 signed-by=/usr/share/keyrings/google-linux-signing-keyring.gpg] http://dl.google.com/linux/chrome/deb/ stable main' > /etc/apt/sources.list.d/google-chrome.list"
-ct_exec "apt-get update -qq && apt-get install -y google-chrome-stable -qq"
+ct_exec "apt-get update -qq && apt-get install -y --no-install-recommends sudo git curl wget unzip supervisor xvfb x11vnc tigervnc-tools websockify openbox procps python3 python3-venv python3-pip fonts-liberation libgtk-3-0 libnss3 libxss1 libasound2 libgbm1 libatk-bridge2.0-0 gnupg google-chrome-stable -qq"
 
 info "Creating user $USERNAME…"
 ct_exec "useradd -m -s /bin/bash $USERNAME"
 ct_exec "echo '$USERNAME:$PASSWORD' | chpasswd"
 ct_exec "adduser $USERNAME sudo"
 
-info "Preparing Playwright browsers directory…"
-ct_exec "mkdir -p /ms-playwright && chown $USERNAME:$USERNAME /ms-playwright"
-
+# No necesitamos /ms-playwright ni descargar otro Chrome
 info "Cloning browser-use/web-ui…"
-ct_exec "sudo -u $USERNAME -H bash -c 'cd ~ && git clone https://github.com/browser-use/web-ui.git web-ui && cd web-ui && python3 -m venv venv && . venv/bin/activate && pip install --upgrade pip -q && pip install -r requirements.txt -q && PLAYWRIGHT_BROWSERS_PATH=/ms-playwright playwright install --force chrome'"
+ct_exec "sudo -u $USERNAME -H bash -c 'cd ~ && git clone https://github.com/browser-use/web-ui.git web-ui && cd web-ui && python3 -m venv venv && . venv/bin/activate && pip install --upgrade pip -q && pip install -r requirements.txt -q'"
 
 info "Adjusting default directories…"
 ct_exec "sudo -u $USERNAME mkdir -p /home/$USERNAME/web-ui/data"
@@ -204,7 +199,7 @@ autorestart=true
 [program:webui]
 command=/home/$USERNAME/web-ui/venv/bin/python /home/$USERNAME/web-ui/webui.py --ip 0.0.0.0 --port 7788
 directory=/home/$USERNAME/web-ui
-environment=DISPLAY=\":1\",PLAYWRIGHT_BROWSERS_PATH=\"/ms-playwright\"
+environment=DISPLAY=\":1\"
 user=$USERNAME
 autostart=true
 autorestart=true
