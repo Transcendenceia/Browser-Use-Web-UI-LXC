@@ -156,7 +156,7 @@ BROWSER_USE_LOGGING_LEVEL=info
 CHROME_PATH=/usr/bin/google-chrome
 CHROME_USER_DATA=/home/$USERNAME/chrome_data
 CHROME_DEBUGGING_PORT=9222
-CHROME_DEBUGGING_HOST=localhost
+CHROME_DEBUGGING_HOST=0.0.0.0
 CHROME_PERSISTENT_SESSION=true
 
 RESOLUTION=1920x1080x24
@@ -184,7 +184,7 @@ autostart=true
 autorestart=true
 
 [program:chrome]
-command=/usr/bin/google-chrome --no-sandbox --no-first-run --disable-features=Translate --disable-translate --disable-infobars --user-data-dir=/home/$USERNAME/chrome_data --kiosk http://localhost:7788
+command=/usr/bin/google-chrome --no-sandbox --no-first-run --disable-features=Translate --disable-translate --disable-infobars --remote-debugging-port=9222 --remote-debugging-address=0.0.0.0 --user-data-dir=/home/$USERNAME/chrome_data http://google.com
 environment=DISPLAY=\":1\"
 user=$USERNAME
 autostart=true
