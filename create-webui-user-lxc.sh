@@ -7,6 +7,7 @@ info(){ echo -e "${C_CYAN}➤ $*${C_RST}"; }
 die(){  echo -e "${C_RED}✘ $*${C_RST}" >&2; exit 1; }
 ask(){ local __var=$1 __def=$2 __q=$3; read -rp "$__q [$__def]: " _v; printf -v "$__var" '%s' "${_v:-$__def}"; }
 
+
 CTID=$(pvesh get /cluster/nextid)
 HOSTNAME="web-ui"
 USERNAME="webui"
@@ -99,10 +100,28 @@ pct create "$CTID" "$TEMPLATE" \
   --memory "$MEM" --cores "$CORES" --rootfs "$ROOTFS_STORAGE:${DISK}" \
   --net0 "$NET0" --password "$PASSWORD" --features nesting=1 --start 1
 
+
 ct_exec(){ pct exec "$CTID" -- bash -ceu "$*"; }
 
-info "Installing base packages and Google Chrome…"
-ct_exec "apt-get update -qq && apt-get install -y --no-install-recommends sudo git curl wget unzip supervisor xvfb x11vnc tigervnc-tools websockify openbox procps python3 python3-venv python3-pip fonts-liberation libgtk-3-0 libnss3 libxss1 libasound2 libgbm1 libatk-bridge2.0-0 gnupg google-chrome-stable -qq"
+# ── 1. Paquetes base (SIN Chrome todavía) ────────────────────────────────
+info "Installing base packages…"
+ct_exec "apt-get update -qq && apt-get install -y --no-install-recommends \
+        sudo git curl wget unzip supervisor xvfb x11vnc tigervnc-tools \
+        websockify openbox procps python3 python3-venv python3-pip \
+        fonts-liberation libgtk-3-0 libnss3 libxss1 libasound2 libgbm1 \
+        libatk-bridge2.0-0 gnupg ca-certificates -qq"
+
+# ── 2. Añadimos la clave y el repo de Google ─────────────────────────────
+info "Adding Google Chrome repository…"
+ct_exec "wget -qO- https://dl.google.com/linux/linux_signing_key.pub | \
+        gpg --dearmor > /usr/share/keyrings/google-linux-signing-keyring.gpg"
+ct_exec "echo 'deb [arch=amd64 signed-by=/usr/share/keyrings/google-linux-signing-keyring.gpg] \
+        http://dl.google.com/linux/chrome/deb/ stable main' \
+        > /etc/apt/sources.list.d/google-chrome.list"
+
+# ── 3. Instalamos Google Chrome ──────────────────────────────────────────
+info "Installing Google Chrome…"
+ct_exec "apt-get update -qq && apt-get install -y google-chrome-stable -qq"
 
 info "Creating user $USERNAME…"
 ct_exec "useradd -m -s /bin/bash $USERNAME"
