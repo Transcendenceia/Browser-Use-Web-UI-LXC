@@ -44,6 +44,7 @@ pct exec "$CTID" -- bash -Eeuo pipefail <<'EOF'
   PLAYWRIGHT_BROWSERS_PATH=/ms-playwright playwright install chrome
   find /opt/web-ui/src -type f -name '*.py' -exec sed -i 's|./tmp/|./data/|g' {} +
 
+
   # Reiniciar servicios
   supervisorctl restart webui novnc
 EOF

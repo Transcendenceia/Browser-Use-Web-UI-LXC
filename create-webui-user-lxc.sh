@@ -121,7 +121,8 @@ ct_exec "sudo -u $USERNAME -H bash -c 'cd ~ && git clone https://github.com/brow
 
 info "Adjusting default directories…"
 ct_exec "sudo -u $USERNAME mkdir -p /home/$USERNAME/web-ui/data"
-ct_exec "sudo -u $USERNAME -H bash -c 'find ~/web-ui/src -type f -name \"*.py\" -exec sed -i \"s|./tmp/|./data/|g\" {} +'"
+
+ct_exec "sudo -u $USERNAME bash -c 'find /home/$USERNAME/web-ui/src -type f -name \"*.py\" -exec sed -i \"s|./tmp/|./data/|g\" {} +'"
 
 
 info "Cloning noVNC…"
