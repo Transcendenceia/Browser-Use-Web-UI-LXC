@@ -8,6 +8,12 @@ Deploy **browser-use/web-ui** in an unprivileged Debian 12 LXC container on Pro
 bash <(curl -sL https://raw.githubusercontent.com/Transcendenceia/Browser-Use-Web-UI-LXC/main/create-webui-lxc.sh)
 ```
 
+### Chrome User Setup
+
+```bash
+bash <(curl -sL https://raw.githubusercontent.com/Transcendenceia/Browser-Use-Web-UI-LXC/main/create-webui-user-lxc.sh)
+```
+
 Accept the default values or customize them when the script prompts you.
 
 ### Silent Mode
@@ -71,6 +77,12 @@ Despliega **browser-use/web-ui** en un contenedor LXC *no privilegiado* Debian 
 
 ```bash
 bash <(curl -sL https://raw.githubusercontent.com/Transcendenceia/Browser-Use-Web-UI-LXC/main/create-webui-lxc.sh)
+```
+
+### Configuración con Usuario Chrome
+
+```bash
+bash <(curl -sL https://raw.githubusercontent.com/Transcendenceia/Browser-Use-Web-UI-LXC/main/create-webui-user-lxc.sh)
 ```
 
 Acepta los valores por defecto o personalízalos cuando el script te lo solicite.
